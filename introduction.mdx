@@ -1,0 +1,67 @@
+---
+title: "What Is Onyx? A Desktop GUI for Steam Build Uploads"
+description: "Onyx is a Godot-powered desktop GUI for uploading multiple Steam apps and depots simultaneously via SteamCMD, replacing manual command-line workflows."
+---
+
+Onyx is a desktop application that puts a graphical interface on top of Steamworks' `SteamCMD` upload tooling. Instead of manually invoking `steamcmd.exe` with long argument strings for each app, Onyx lets you manage accounts, configure apps and depots, and run multiple uploads in a single session — all from one window.
+
+## What Onyx does
+
+Onyx wraps the official Steamworks ContentBuilder workflow. It reads and writes the same `.vdf` configuration files that Valve's own tools use, so everything you do in Onyx is compatible with your existing Steamworks setup.
+
+<CardGroup cols={2}>
+  <Card title="Multi-app uploads" icon="layer-group">
+    Queue and run uploads for multiple Steam apps and depots in one session without switching between terminal windows.
+  </Card>
+  <Card title="VDF config management" icon="file-code">
+    Generate, view, and edit `app_<APPID>.vdf` and `depot_<DEPOTID>.vdf` build config files directly inside the app.
+  </Card>
+  <Card title="Steam account management" icon="users">
+    Store and switch between multiple Steam accounts. Onyx passes credentials directly to SteamCMD at upload time.
+  </Card>
+  <Card title="Real-time console output" icon="terminal">
+    Watch live SteamCMD output as each build uploads. Steam Guard prompts are detected and surfaced automatically.
+  </Card>
+  <Card title="Upload cancellation" icon="circle-stop">
+    Cancel an in-progress upload at any time without needing to kill a background process manually.
+  </Card>
+  <Card title="Windows and Linux" icon="computer">
+    Distributed as a single executable for Windows (`.exe`) and Linux (`.x86_64`). No installer or runtime required.
+  </Card>
+</CardGroup>
+
+## How it fits into the Steamworks workflow
+
+Onyx sits between your local build output and the Steam backend. It does not replace the Steamworks SDK or SteamCMD — it orchestrates them. The standard flow looks like this:
+
+1. You build your game and place files in the ContentBuilder `content/` directory.
+2. Onyx generates or reads the `app_*.vdf` and `depot_*.vdf` configs in the `scripts/` directory.
+3. Onyx calls `steamcmd.exe` (Windows) or `steamcmd.sh` (Linux) with the correct arguments.
+4. SteamCMD uploads the build and writes logs to the `output/` directory.
+
+Onyx handles steps 2–3 and surfaces the output from step 4 in real time.
+
+## Who Onyx is for
+
+Onyx is useful for any developer or team that publishes to Steam and wants to avoid scripting or manual command-line work for every release. It is especially helpful when managing multiple depots (for example, separate depots per platform or DLC) or when multiple team members need to trigger uploads with their own Steam credentials.
+
+<Note>
+  Onyx requires an existing Steamworks ContentBuilder installation. If you do not have the Steamworks SDK set up yet, start with the [installation guide](/installation) before continuing.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Go from zero to your first upload in a few steps.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Detailed setup instructions for Windows and Linux.
+  </Card>
+  <Card title="Setting up ContentBuilder" icon="folder-open" href="/guides/setup-content-builder">
+    Configure your Steamworks ContentBuilder directory for use with Onyx.
+  </Card>
+  <Card title="Uploading builds" icon="cloud-arrow-up" href="/guides/uploading-builds">
+    Learn how to queue and run uploads for your apps and depots.
+  </Card>
+</CardGroup>

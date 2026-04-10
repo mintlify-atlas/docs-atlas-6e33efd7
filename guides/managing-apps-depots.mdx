@@ -1,0 +1,82 @@
+---
+title: 'Manage App Cards and Queue Builds for Upload in Onyx'
+description: 'Understand how Onyx loads app cards from VDF files, edit app descriptions, select apps for upload, and refresh the scripts folder after making changes.'
+---
+
+The Onyx main screen is built around app cards—one card per `app_*.vdf` file found in your ContentBuilder `scripts/` folder. Each card gives you a snapshot of that app's configuration and lets you control whether it is included in the next upload batch. This guide explains how app cards are populated, what you can edit directly from the main screen, and how to keep the card list in sync with your `scripts/` folder.
+
+## How app cards are populated
+
+When Onyx starts (or when you click **Refresh**), it scans the `scripts/` subdirectory of your configured ContentBuilder path. Any file whose name matches `app_*.vdf` and whose App ID prefix is a valid integer is loaded as an app card.
+
+For each file Onyx parses:
+
+- The **`"appid"`** field to label the card.
+- The **`"desc"`** field to populate the editable description text box.
+- The **`"depots"`** block to count how many depots are configured (displayed as "Depots: N").
+
+<Note>
+VDF files that do not start with a valid integer App ID are silently ignored during the scan. Make sure your file names follow the `app_<APPID>.vdf` convention.
+</Note>
+
+## What each app card shows
+
+<CardGroup cols={2}>
+  <Card title="App ID" icon="hash">
+    The numeric Steam application ID parsed from the VDF filename and `"appid"` field. This is read-only on the main screen.
+  </Card>
+  <Card title="Description" icon="pencil">
+    An editable text field pre-filled from the VDF's `"desc"` value. Changes here are written back to the VDF just before upload begins.
+  </Card>
+  <Card title="Depot count" icon="layers">
+    A button showing "Depots: N", where N is the number of entries in the VDF's `"depots"` block. Click it to open the Setup dialog for that app.
+  </Card>
+  <Card title="Select checkbox" icon="square-check">
+    Tick this to include the app in the next upload. Untick to exclude it. The counter in the toolbar reflects the current number of selected apps.
+  </Card>
+</CardGroup>
+
+## Editing an app description
+
+The description field on each app card maps directly to the `"desc"` key in the app's VDF file. To change it:
+
+1. Click into the description text field on the app card.
+2. Type the new description.
+3. Your changes are saved to the VDF automatically when you click **Upload**—Onyx writes the updated value to the file before launching SteamCMD.
+
+<Tip>
+Use the description field to label builds with version numbers or branch names (e.g. `v1.4.2 - beta branch`). The text appears in the Steamworks build history, making it easier to identify specific uploads later.
+</Tip>
+
+## Selecting apps for upload
+
+Each app card has a checkbox in its header. Tick the checkbox to include that app in the next upload run; untick it to skip it.
+
+The toolbar displays a live counter: **APP(s) SELECTED: N**. The **Upload** button stays disabled until both of these conditions are met:
+
+- At least one app checkbox is ticked (N ≥ 1).
+- A Steam user account is selected in the Users panel.
+
+You can select or deselect all app cards independently—there is no "select all" control, so each app must be toggled individually.
+
+## Refreshing the app card list
+
+If you add, remove, or rename VDF files in `scripts/` outside of Onyx (for example by editing them manually or running the Setup dialog to generate new ones), click the **Refresh** button in the toolbar. Onyx rescans the `scripts/` folder and rebuilds the card list from scratch.
+
+<Note>
+Clicking **Refresh** discards any unsaved description edits in the current card list. If you have edited descriptions that you want to keep, click **Upload** first (or save the VDF manually) before refreshing.
+</Note>
+
+## Understanding depot count
+
+The depot count shown on each app card is derived from the `"depots"` block in the app's VDF file. For example:
+
+```vdf app_1234560.vdf
+"depots"
+{
+    "1234561" "depot_1234561.vdf"
+    "1234562" "depot_1234562.vdf"
+}
+```
+
+This would display **Depots: 2** on the app card. To add or remove depots, open the Setup dialog by clicking the depot count button or the **Setup** toolbar button.

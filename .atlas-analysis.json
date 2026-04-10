@@ -1,0 +1,66 @@
+{
+  "projectType": "general",
+  "projectName": "Onyx: Steam Build Uploader",
+  "projectDescription": "A Godot-powered desktop GUI tool for uploading multiple Steam apps and depots simultaneously using SteamCMD, following the official Steamworks workflow.",
+  "theme": "aspen",
+  "primaryColor": "#1a9fff",
+  "lightColor": null,
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Using the App",
+            "pages": [
+              "guides/setup-content-builder",
+              "guides/managing-users",
+              "guides/managing-apps-depots",
+              "guides/uploading-builds"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/vdf-files",
+              "reference/settings-config",
+              "reference/steam-guard",
+              "reference/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Upload multiple Steam apps and depots in a single session",
+    "GUI-based workflow following official Steamworks ContentBuilder conventions",
+    "Automatic VDF (app/depot build config) generation and editing",
+    "Multi-user Steam account management with password storage",
+    "Real-time SteamCMD console output with Steam Guard detection",
+    "Cross-platform support for Windows and Linux",
+    "Upload cancellation and process management"
+  ],
+  "publicApiSurface": [
+    "SettingManager.get_setting(section, key, default_value)",
+    "SettingManager.set_setting(section, key, value)",
+    "SettingManager.save_user(username, password, is_selected)",
+    "SettingManager.load_users()",
+    "SettingManager.set_selected_user(username)",
+    "SettingManager.clear_selected_user()",
+    "SettingManager.get_selected_user()",
+    "SettingManager.get_selected_user_password()",
+    "SteamUserCard.setup(user_data)",
+    "SetupPopup class",
+    "UsersPopup class"
+  ]
+}

@@ -1,0 +1,136 @@
+---
+title: "Install and Run Onyx Steam Uploader on Windows or Linux"
+description: "Step-by-step installation for Onyx Steam Build Uploader on Windows and Linux, including prerequisites, ContentBuilder setup, and settings file location."
+---
+
+Onyx ships as a single self-contained executable built with Godot Engine 4.5. There is no installer, package manager entry, or runtime dependency — download the binary and run it. This page covers prerequisites, platform-specific steps, and how Onyx stores its configuration.
+
+## Prerequisites
+
+Before running Onyx, you need the following in place:
+
+- **Steamworks SDK** — Download from the Steamworks partner site. Onyx requires the ContentBuilder component, which includes SteamCMD.
+- **ContentBuilder directory** — The `tools/ContentBuilder/` directory from the Steamworks SDK, with `content/`, `output/`, and `scripts/` subdirectories present.
+- **A Steamworks partner account** — Required to authenticate with Steam and publish builds.
+
+<Note>
+  Onyx does not bundle SteamCMD. It calls the `steamcmd.exe` or `steamcmd.sh` binary that is already part of your ContentBuilder installation.
+</Note>
+
+## Download Onyx
+
+Download the latest release from the [Onyx GitHub Releases page](https://github.com/RykoTheDev/Onyx-Steam-Build-Uploader/releases). Choose the file that matches your platform:
+
+| Platform | File |
+|----------|------|
+| Windows  | `OnyxUploader.exe` |
+| Linux    | `OnyxUploader.x86_64` |
+
+## Platform setup
+
+<Tabs>
+  <Tab title="Windows">
+    <Steps>
+      <Step title="Download the executable">
+        Download `OnyxUploader.exe` from the [releases page](https://github.com/RykoTheDev/Onyx-Steam-Build-Uploader/releases) and place it in a folder of your choice. A dedicated folder is recommended because Onyx writes `settings.cfg` next to the executable.
+
+        ```
+        C:\Tools\OnyxUploader\
+        └── OnyxUploader.exe
+        ```
+      </Step>
+      <Step title="Run the executable">
+        Double-click `OnyxUploader.exe`. No installer is needed — the application is a single self-contained file with all assets embedded.
+
+        Windows SmartScreen may warn that the file is from an unknown publisher. Click **More info** then **Run anyway** to proceed.
+      </Step>
+      <Step title="Set your ContentBuilder path">
+        On first launch, Onyx opens a setup dialog. Click **Browse** and navigate to your ContentBuilder directory (for example, `C:\SteamworksSDK\tools\ContentBuilder`). Onyx validates that `content\`, `output\`, and `scripts\` subdirectories are present before saving the path.
+      </Step>
+    </Steps>
+
+    SteamCMD on Windows is located at `builder\steamcmd.exe` inside the ContentBuilder directory. Onyx resolves this path automatically.
+  </Tab>
+  <Tab title="Linux">
+    <Steps>
+      <Step title="Download the executable">
+        Download `OnyxUploader.x86_64` from the [releases page](https://github.com/RykoTheDev/Onyx-Steam-Build-Uploader/releases) and place it in a directory of your choice.
+
+        ```bash
+        mkdir -p ~/tools/onyx
+        mv OnyxUploader.x86_64 ~/tools/onyx/
+        ```
+      </Step>
+      <Step title="Mark the file as executable">
+        The downloaded file may not have the executable bit set. Run the following command before launching:
+
+        ```bash
+        chmod +x ~/tools/onyx/OnyxUploader.x86_64
+        ```
+      </Step>
+      <Step title="Run the executable">
+        Launch Onyx from the terminal or your file manager:
+
+        ```bash
+        ~/tools/onyx/OnyxUploader.x86_64
+        ```
+
+        <Tip>
+          Running from the terminal lets you see any startup output, which can help diagnose display or library issues.
+        </Tip>
+      </Step>
+      <Step title="Set your ContentBuilder path">
+        On first launch, Onyx opens a setup dialog. Click **Browse** and navigate to your ContentBuilder directory. Onyx validates that `content/`, `output/`, and `scripts/` subdirectories are present before saving the path.
+      </Step>
+    </Steps>
+
+    SteamCMD on Linux is located at `builder_linux/steamcmd.sh` inside the ContentBuilder directory. Onyx resolves this path automatically.
+  </Tab>
+</Tabs>
+
+## ContentBuilder directory structure
+
+Onyx validates the ContentBuilder directory when you configure it. The directory must contain the following structure:
+
+```
+ContentBuilder/
+├── builder/               # Windows: contains steamcmd.exe
+│   └── steamcmd.exe
+├── builder_linux/         # Linux: contains steamcmd.sh
+│   └── steamcmd.sh
+├── content/               # Required — place your game files here
+├── output/                # Required — SteamCMD writes upload logs here
+└── scripts/               # Required — VDF build config files go here
+    ├── app_<APPID>.vdf
+    └── depot_<DEPOTID>.vdf
+```
+
+<Warning>
+  If any of `content/`, `output/`, or `scripts/` are missing, Onyx will reject the directory and display an error. Create the missing folders manually before retrying.
+</Warning>
+
+## Settings file
+
+Onyx saves all configuration — including the ContentBuilder path and stored Steam accounts — to a file called `settings.cfg`.
+
+| Context | Location |
+|---------|----------|
+| Running the distributed executable | Next to `OnyxUploader.exe` or `OnyxUploader.x86_64` |
+| Running from the Godot editor | `user://settings.cfg` (Godot's user data directory) |
+
+To reset Onyx to a clean state, delete `settings.cfg` and relaunch. Onyx will open the setup dialog again on next startup.
+
+<Warning>
+  Steam credentials stored in `settings.cfg` are saved in plain text. Keep the file and the directory containing Onyx in a location only you can access.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Complete your first upload end-to-end.
+  </Card>
+  <Card title="Setting up ContentBuilder" icon="folder-open" href="/guides/setup-content-builder">
+    Configure your ContentBuilder directory and VDF files.
+  </Card>
+</CardGroup>

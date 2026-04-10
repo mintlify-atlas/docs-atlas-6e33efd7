@@ -1,0 +1,69 @@
+---
+title: 'Handling Steam Guard Prompts During SteamCMD Uploads'
+description: 'How Onyx detects when SteamCMD is waiting for a Steam Guard code, what the yellow warning means, and how to respond so your upload can continue.'
+---
+
+Steam Guard is Steam's two-factor authentication system. When SteamCMD logs in to upload your build, Steam may require a one-time code before allowing access. Understanding how Onyx detects and surfaces this prompt helps you respond quickly and keep uploads moving.
+
+## Why SteamCMD pauses for Steam Guard
+
+SteamCMD saves a login session after a successful authentication. If that session has expired, or if the account has never been authenticated on this machine before, Steam will challenge the login with a Steam Guard code. SteamCMD then pauses and waits for you to type the code into its window before it can proceed.
+
+Steam Guard codes come from one of two sources depending on how your account is configured:
+
+| Source | How to retrieve |
+|---|---|
+| Email | Check the inbox for the email address registered to the Steam account. The code expires after a short window. |
+| Mobile authenticator (Steam app) | Open the Steam mobile app, tap the shield icon, and read the 5-character code. Codes rotate every 30 seconds. |
+
+## How Onyx detects the Steam Guard prompt
+
+SteamCMD is launched as a separate OS process. Onyx redirects its output to a temporary file and polls that file every 0.1 seconds. Because SteamCMD opens its own window to accept the code rather than writing a prompt to standard output, Onyx cannot read the prompt text directly.
+
+Instead, Onyx uses a timeout heuristic: if the SteamCMD process is still running but no new output has appeared in the redirected file for **5 seconds**, Onyx assumes SteamCMD is waiting for input and shows a warning in the upload console.
+
+## The yellow warning message
+
+When the 5-second idle threshold is reached, Onyx prints the following to the console in yellow:
+
+```
+⚠️ WAITING FOR INPUT
+SteamCMD may be waiting for your Steam Guard code.
+Please check your email or mobile authenticator,
+then enter the code in the SteamCMD window.
+```
+
+This message is informational — Onyx continues monitoring the process. As soon as you supply the code and SteamCMD resumes producing output, the upload log will start updating again.
+
+## How to respond
+
+<Steps>
+  <Step title="Look for the SteamCMD window">
+    SteamCMD opens its own terminal window when launched. It may have been pushed to the background or minimized to the taskbar. Check your taskbar for a command prompt or terminal window associated with SteamCMD.
+  </Step>
+  <Step title="Read the prompt in SteamCMD">
+    The SteamCMD window will show a prompt such as `Enter the current code from your Steam Guard Mobile Authenticator app:` or similar. Confirm you are looking at the right window.
+  </Step>
+  <Step title="Retrieve your code">
+    Get the code from your email inbox or the Steam mobile authenticator app. Use the correct source for your account's Steam Guard configuration.
+  </Step>
+  <Step title="Type the code and press Enter">
+    Click the SteamCMD window to focus it, type your Steam Guard code, and press Enter. SteamCMD will validate the code and resume the upload process.
+  </Step>
+</Steps>
+
+<Warning>
+Steam Guard codes are time-sensitive. Email codes expire quickly and mobile authenticator codes rotate every 30 seconds. If you wait too long, SteamCMD may reject the code. In that case, SteamCMD will prompt again — retrieve a fresh code and try once more.
+</Warning>
+
+## What happens if you do not respond
+
+If you ignore the Steam Guard prompt, SteamCMD will continue waiting indefinitely or until it times out internally. The upload will not progress. Eventually SteamCMD may close itself and report a login failure, which Onyx will show in the console as a non-zero exit code. You will need to re-run the upload.
+
+## Avoiding repeated Steam Guard prompts
+
+<Tip>
+Use a dedicated Steam account for automated or frequent builds. After successfully authenticating once with Steam Guard, SteamCMD caches the session on disk. Subsequent uploads from the same machine using the same account typically do not require a new Steam Guard code until the session expires. A dedicated build account keeps this session independent from your personal Steam login.
+</Tip>
+
+If you are still prompted repeatedly on the same machine, check whether your SteamCMD installation directory is being cleared between runs (common in CI environments). The session files are stored inside the SteamCMD directory — preserving them between runs avoids re-authentication.

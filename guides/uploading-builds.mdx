@@ -1,0 +1,102 @@
+---
+title: 'Run a Steam Build Upload from Start to Finish in Onyx'
+description: 'Run a full Steam build upload in Onyx: select apps and a user, monitor real-time SteamCMD output, handle Steam Guard prompts, and cancel or review results.'
+---
+
+Once your ContentBuilder path is configured and your app VDFs are in place, Onyx can drive SteamCMD to upload one or more apps in a single operation. This guide covers everything from confirming prerequisites to reviewing the output after the last app finishes uploading.
+
+## Prerequisites
+
+Before starting an upload, confirm the following:
+
+- The ContentBuilder directory is set and at least one app card is visible on the main screen. See [Set Up Your Steam ContentBuilder Directory](/guides/setup-content-builder) if not.
+- At least one app card checkbox is ticked (the **APP(s) SELECTED** counter shows N ≥ 1).
+- A Steam user account is selected in the Users panel (its name appears in the main screen header). See [Add and Manage Steam Accounts in Onyx](/guides/managing-users) if not.
+
+The **Upload** button is disabled until both conditions are met.
+
+## Starting an upload
+
+<Steps>
+  <Step title="Select your apps">
+    Tick the checkbox on each app card you want to upload. The **APP(s) SELECTED** counter in the toolbar updates as you select or deselect cards.
+  </Step>
+  <Step title="Confirm the active user">
+    Check the main screen header to verify the correct Steam account is shown as active. If you need to change it, click **Manage Users** and select a different card.
+  </Step>
+  <Step title="Click Upload">
+    Click the **Upload** button. The console panel opens automatically at the bottom of the window and the upload sequence begins.
+  </Step>
+</Steps>
+
+## How Onyx processes apps
+
+Onyx uploads apps **sequentially**—one at a time, in the order they appear on the main screen. For each selected app, Onyx performs these steps:
+
+1. **Writes the description** — the current value of the description text field is saved to the `"desc"` key in the app's VDF file on disk.
+2. **Launches SteamCMD** — a subprocess is started with the following command:
+
+<Tabs>
+  <Tab title="Windows">
+    ```bat
+    cmd.exe /c "<steamcmd_exe>" +login <user> <pass> +run_app_build "<vdf_path>" +quit > "<output_file>" 2>&1
+    ```
+    SteamCMD output (stdout and stderr) is written to a log file and streamed to the console panel in real time.
+  </Tab>
+  <Tab title="Linux">
+    ```bash
+    bash -c "<steamcmd_sh>" +login <user> <pass> +run_app_build "<vdf_path>" +quit > "<output_file>" 2>&1
+    ```
+    SteamCMD output (stdout and stderr) is written to a log file and streamed to the console panel in real time.
+  </Tab>
+</Tabs>
+
+3. **Streams output** — every line SteamCMD writes is displayed in the console panel as it arrives.
+4. **Moves to the next app** — once SteamCMD exits for the current app, Onyx immediately starts the same process for the next selected app.
+
+When all selected apps have been processed, the console panel displays:
+
+```
+All uploads finished!
+```
+
+<Note>
+The console panel remains open after the upload completes so you can scroll through the full output. It does not close automatically.
+</Note>
+
+## Handling Steam Guard
+
+If SteamCMD is waiting for a Steam Guard code and produces no output for more than 5 seconds while the process is still running, Onyx displays a yellow warning in the console panel:
+
+> **Steam Guard detected.** SteamCMD may be waiting for a code. Check your email or mobile authenticator and enter the code in the SteamCMD window.
+
+<Warning>
+Steam Guard interrupts the automated upload flow. When this warning appears, switch to the SteamCMD window (or the terminal session it is running in), enter the code, and press Enter. The upload will resume automatically once the code is accepted.
+</Warning>
+
+To reduce Steam Guard interruptions on subsequent runs, consider using a Steam account with a dedicated machine authorization, or configure a pre-authorized SteamCMD session before using Onyx.
+
+## Cancelling an upload
+
+To stop an in-progress upload at any point:
+
+1. Click **Cancel Upload** in the console panel toolbar.
+2. Onyx kills the active SteamCMD process immediately.
+3. The console panel clears its output and closes automatically.
+
+<Warning>
+Cancelling mid-upload does not roll back any depots that SteamCMD has already submitted to Steam. A partial upload may appear as an incomplete build in Steamworks. Check the build list in the Steamworks partner dashboard and delete any unwanted incomplete builds.
+</Warning>
+
+Uploads for apps that had not yet started when you cancelled are not processed. To re-run only the remaining apps, make sure their checkboxes are still ticked and click **Upload** again.
+
+## Reviewing upload results
+
+After the upload finishes (or after cancelling), scroll through the console panel to inspect the SteamCMD output for each app. Look for:
+
+- **`App build successful`** — SteamCMD completed the build and submitted the depot.
+- **Error lines** — SteamCMD errors are printed inline. Common causes include invalid App IDs, missing content paths, or authentication failures.
+
+<Tip>
+The raw output log is also written to the `output/` folder inside your ContentBuilder directory. You can open those files in any text editor for a permanent record of each upload session.
+</Tip>

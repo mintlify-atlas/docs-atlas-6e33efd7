@@ -1,0 +1,124 @@
+---
+title: 'Onyx settings.cfg: All Sections and Keys Explained'
+description: 'Reference for every section and key in Onyx settings.cfg, including file location, format details, and a warning about plaintext password storage.'
+---
+
+Onyx stores all persistent configuration in a single file called `settings.cfg`. This file is read on startup and written whenever you make changes through the UI. You can also edit it directly in a text editor if needed, though most settings are easier to manage through Onyx itself.
+
+## File location
+
+Where `settings.cfg` is written depends on how you are running Onyx:
+
+| Context | Location |
+|---|---|
+| Running as a compiled executable | Same directory as the executable (`settings.cfg`) |
+| Running from the Godot editor | Godot's user data directory (`user://settings.cfg`) |
+
+<Note>
+On Windows, `user://` resolves to `%APPDATA%\Godot\app_userdata\<project-name>\`. On Linux it resolves to `~/.local/share/godot/app_userdata/<project-name>/`. When running the shipped executable, the file sits right next to `Onyx.exe` or `Onyx.x86_64`, making it easy to back up or transfer.
+</Note>
+
+## File format
+
+`settings.cfg` uses Godot's `ConfigFile` format, which is an INI-style text format with sections in square brackets and key-value pairs using `=`.
+
+```ini settings.cfg
+[paths]
+content_builder="C:/SteamSDK/tools/ContentBuilder"
+
+[users]
+myusername={"username": "myusername", "password": "mypassword", "is_selected": true}
+
+[welcome_popup]
+never_show_again=false
+show_on_update_only=true
+last_version="1.0"
+```
+
+String values are double-quoted. Boolean and numeric values are unquoted. Dictionary values (used for user entries) are stored as inline JSON strings.
+
+## Sections and keys
+
+### `[paths]`
+
+Stores filesystem paths needed by Onyx.
+
+| Key | Type | Description |
+|---|---|---|
+| `content_builder` | string | Absolute path to your Steamworks ContentBuilder directory. This is the folder that contains `builder/`, `content/`, `output/`, and `scripts/` subdirectories. |
+
+**Example:**
+
+```ini
+[paths]
+content_builder="C:/SteamSDK/tools/ContentBuilder"
+```
+
+### `[users]`
+
+Stores one entry per saved Steam account. The key is the username; the value is a JSON-encoded dictionary.
+
+| Dictionary key | Type | Description |
+|---|---|---|
+| `username` | string | The Steam account username. |
+| `password` | string | The Steam account password, stored in plaintext. |
+| `is_selected` | boolean | Whether this account is currently selected for uploads. Only one account should have `true` at a time. |
+
+**Example with two accounts:**
+
+```ini
+[users]
+build_account={"username": "build_account", "password": "hunter2", "is_selected": true}
+backup_account={"username": "backup_account", "password": "correct-horse", "is_selected": false}
+```
+
+<Warning>
+Passwords are stored in plaintext in `settings.cfg`. Anyone with read access to the file can see them. Use a dedicated Steam account for builds rather than your personal account, and treat `settings.cfg` as a sensitive file.
+</Warning>
+
+### `[welcome_popup]`
+
+Controls the welcome screen shown at startup.
+
+| Key | Type | Description |
+|---|---|---|
+| `never_show_again` | boolean | When `true`, the welcome popup is suppressed entirely on startup. |
+| `show_on_update_only` | boolean | When `true`, the popup only appears when Onyx has been updated since the last launch. |
+| `last_version` | string | The version string of Onyx at the time the popup was last shown. Used to detect updates. |
+
+**Example:**
+
+```ini
+[welcome_popup]
+never_show_again=false
+show_on_update_only=true
+last_version="1.0"
+```
+
+## Complete example file
+
+```ini settings.cfg
+[paths]
+content_builder="C:/SteamSDK/tools/ContentBuilder"
+
+[users]
+build_account={"username": "build_account", "password": "s3cur3p4ss", "is_selected": true}
+
+[welcome_popup]
+never_show_again=false
+show_on_update_only=true
+last_version="1.0"
+```
+
+## When to edit manually vs. using the UI
+
+Most settings should be changed through the Onyx interface — the UI validates inputs before writing and is less error-prone than hand-editing. However, direct edits to `settings.cfg` are appropriate when:
+
+- You are moving Onyx to a new machine and want to transfer your saved users and ContentBuilder path without re-entering them.
+- You need to remove a saved user that no longer exists in the UI.
+- You want to reset the welcome popup by deleting the `[welcome_popup]` section.
+- You are scripting a CI/CD setup where the file is generated programmatically.
+
+<Tip>
+When editing `settings.cfg` manually, make sure Onyx is not running. Onyx writes the file on exit and may overwrite your changes if it is open while you edit.
+</Tip>

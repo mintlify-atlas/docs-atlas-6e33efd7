@@ -1,0 +1,142 @@
+---
+title: 'VDF Build Config Files: App and Depot Field Reference'
+description: 'Complete reference for app and depot VDF files used by Onyx and SteamCMD, including all fields, file naming, and which values Onyx manages automatically.'
+---
+
+Valve Data Format (VDF) files are the build manifests that SteamCMD reads when uploading your game to Steam. Onyx generates these files automatically when you run the setup wizard, but understanding their structure helps you customize builds, add depots, and troubleshoot upload failures.
+
+## File naming and location
+
+VDF files live inside your ContentBuilder `scripts/` directory. Onyx expects exactly this naming convention:
+
+| File | Pattern | Example |
+|---|---|---|
+| App manifest | `app_<APPID>.vdf` | `app_1234560.vdf` |
+| Depot manifest | `depot_<DEPOTID>.vdf` | `depot_1234561.vdf` |
+
+<Warning>
+App files that do not match the `app_<integer>.vdf` pattern are silently ignored. If no apps appear on the Onyx main screen, verify the filenames in your `scripts/` folder.
+</Warning>
+
+Your ContentBuilder directory should look like this:
+
+<Tree>
+  <Tree.Folder name="ContentBuilder" defaultOpen>
+    <Tree.Folder name="builder" />
+    <Tree.Folder name="content" />
+    <Tree.Folder name="output" />
+    <Tree.Folder name="scripts" defaultOpen>
+      <Tree.File name="app_1234560.vdf" />
+      <Tree.File name="depot_1234561.vdf" />
+      <Tree.File name="depot_1234562.vdf" />
+    </Tree.Folder>
+  </Tree.Folder>
+</Tree>
+
+## App VDF structure
+
+The app VDF tells SteamCMD which depots to include, where to write build output, and metadata about the build. Onyx generates this file from a template during setup.
+
+```vdf app_1234560.vdf
+"appbuild"
+{
+    "appid"       "1234560"
+    "desc"        "Generated with SteamBuildUploader by Silver Demon Studios"
+    "buildoutput" "D:\SteamSDK\tools\ContentBuilder\output"
+    "contentroot" ""
+    "setlive"     ""
+    "preview"     "0"
+    "local"       ""
+    "depots"
+    {
+        "1234561" "depot_1234561.vdf"
+    }
+}
+```
+
+### Field reference
+
+| Field | Description | Managed by |
+|---|---|---|
+| `appid` | Your Steam App ID. Must match the filename. | Onyx (setup wizard) |
+| `desc` | Human-readable label for this build. Shown in the Steamworks partner dashboard. | Onyx (editable in UI, written before each upload) |
+| `buildoutput` | Absolute path where SteamCMD writes build logs and manifests. | Template (edit manually to match your SDK path) |
+| `contentroot` | Root path prepended to all depot content roots. Leave empty if depot VDFs use absolute paths. | Template |
+| `setlive` | Branch name to set live after upload (e.g. `beta`). Leave empty to upload without going live. | Manual |
+| `preview` | Set to `"1"` to do a dry-run upload that does not publish to Steam. | Manual |
+| `local` | Path to a local content server. Leave empty for standard Steam distribution. | Manual |
+| `depots` | Maps Depot IDs to their corresponding depot VDF filenames. | Onyx (setup wizard) |
+
+<Note>
+The `desc` field is the only app VDF value Onyx modifies after initial setup. Whatever you type in the build description field in the UI is written to `desc` immediately before SteamCMD runs.
+</Note>
+
+<Tip>
+To add a depot after initial setup, add a new entry to the `depots` block and create the corresponding `depot_<DEPOTID>.vdf` file. Onyx will detect the new depot on the next launch.
+</Tip>
+
+## Depot VDF structure
+
+Each depot VDF describes what files to include for one depot, and where those files live on disk.
+
+```vdf depot_1234561.vdf
+"DepotBuildConfig"
+{
+    "DepotID"     "1234561"
+    "contentroot" "C:\MyGame\build\win64"
+    "FileMapping"
+    {
+        "LocalPath" "*"
+        "DepotPath" "."
+        "recursive" "1"
+    }
+    "FileExclusion" "*.pdb"
+}
+```
+
+### Field reference
+
+| Field | Description | Managed by |
+|---|---|---|
+| `DepotID` | The Steam Depot ID this file configures. | Onyx (setup wizard) |
+| `contentroot` | Absolute path to the directory containing files to upload. Onyx reads this to display the content root in the UI. | Onyx (setup wizard) / manual edits |
+| `FileMapping.LocalPath` | Glob pattern of files to include relative to `contentroot`. `*` means all files. | Template |
+| `FileMapping.DepotPath` | Destination path inside the depot. `.` means the depot root. | Template |
+| `FileMapping.recursive` | `"1"` includes subdirectories recursively. `"0"` uploads only the top level. | Template |
+| `FileExclusion` | Glob pattern of files to skip. The default excludes `.pdb` debug symbol files. | Manual |
+
+### Changing `FileExclusion`
+
+The default exclusion rule (`*.pdb`) drops Windows debug symbols, which are large and unnecessary for players. You may want to adjust this if:
+
+- You ship a Linux build where `.pdb` files don't exist (the rule is harmless but you can remove it for clarity).
+- You want to exclude additional file types, such as editor metadata or source assets.
+- You intentionally ship debug symbols for a developer branch.
+
+Multiple exclusion rules require multiple `FileExclusion` lines:
+
+```vdf
+"FileExclusion" "*.pdb"
+"FileExclusion" "*.map"
+"FileExclusion" "editor_data/*"
+```
+
+## Fields Onyx reads vs. fields you manage manually
+
+<CardGroup cols={2}>
+  <Card title="Managed by Onyx" icon="wand-magic-sparkles">
+    - `appid` — read to identify the build
+    - `desc` — written before every upload
+    - `depots` block — parsed to list and count depots
+    - `DepotID` — read per depot
+    - `contentroot` (depot) — displayed in the depot list
+  </Card>
+  <Card title="Edit manually in the VDF" icon="pen-to-square">
+    - `buildoutput` — must point to your actual SDK output folder
+    - `setlive` — set the branch name when you want auto-promotion
+    - `preview` — set to `"1"` for dry-run testing
+    - `contentroot` (app) — set if depots use relative paths
+    - `FileMapping` rules — customize inclusions per depot
+    - `FileExclusion` rules — add or remove file filters
+  </Card>
+</CardGroup>

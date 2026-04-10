@@ -1,0 +1,147 @@
+---
+title: 'Set Up Steamworks ContentBuilder and Generate VDFs'
+description: 'Point Onyx to the Steamworks ContentBuilder folder, configure app and depot entries, and generate the VDF files SteamCMD needs to run your builds.'
+---
+
+Onyx needs to know where your Steamworks ContentBuilder directory lives before it can display app cards or run uploads. This guide walks you through pointing Onyx to that directory, creating app and depot configurations, and generating the VDF files that SteamCMD reads during a build.
+
+## What is ContentBuilder?
+
+ContentBuilder is a folder that ships inside the Steamworks SDK. It contains the tools and directory structure SteamCMD requires to package and upload game builds. The default path after extracting the SDK is:
+
+```
+tools/ContentBuilder/
+```
+
+Onyx validates that this folder contains three required subdirectories before accepting it.
+
+<Tree>
+  <Tree.Folder name="ContentBuilder" defaultOpen>
+    <Tree.Folder name="content" />
+    <Tree.Folder name="output" />
+    <Tree.Folder name="scripts" defaultOpen>
+      <Tree.File name="app_1234560.vdf" />
+      <Tree.File name="depot_1234561.vdf" />
+    </Tree.Folder>
+  </Tree.Folder>
+</Tree>
+
+| Subdirectory | Purpose |
+|---|---|
+| `content/` | Source files mapped into depots |
+| `output/` | Build logs and intermediate output written by SteamCMD |
+| `scripts/` | VDF configuration files read by SteamCMD at upload time |
+
+<Note>
+Onyx reads and writes only the `scripts/` subdirectory. The `content/` and `output/` folders are used by SteamCMD directly and are not modified by Onyx.
+</Note>
+
+## Opening the setup dialog
+
+Open the Setup dialog using either entry point:
+
+- Click the **Setup** button in the top toolbar, or
+- Click **Set Directory** on the empty-state panel shown when no app VDFs have been found yet.
+
+## Selecting the ContentBuilder path
+
+<Steps>
+  <Step title="Click Browse">
+    In the Setup dialog, click **Browse**. A native file picker opens.
+  </Step>
+  <Step title="Navigate to ContentBuilder">
+    Navigate to your Steamworks SDK installation and select the `ContentBuilder` folder (e.g. `tools/ContentBuilder`). Click **Select Folder**.
+  </Step>
+  <Step title="Validation">
+    Onyx checks that the selected folder contains `content/`, `output/`, and `scripts/` subdirectories. If any are missing, an error is shown and the path is not saved. Verify you selected the correct `ContentBuilder` folder and try again.
+  </Step>
+  <Step title="Existing VDFs loaded">
+    Once the path is accepted, any `app_*.vdf` files already present in `scripts/` are listed in the Setup dialog automatically.
+  </Step>
+</Steps>
+
+<Warning>
+If the folder you select does not contain all three required subdirectories (`content`, `output`, `scripts`), Onyx will reject it. Do not select a parent or child of `ContentBuilder`—select the `ContentBuilder` folder itself.
+</Warning>
+
+## Creating a new app configuration
+
+Each Steam application is represented by one app VDF file. You can create as many app entries as you need.
+
+<Steps>
+  <Step title="Add an app card">
+    Click **New App** in the Setup dialog. A new app card appears with an **App ID** spinbox.
+  </Step>
+  <Step title="Enter the App ID">
+    Set the App ID spinbox to your Steam application ID. This is the numeric ID found in the Steamworks partner dashboard.
+  </Step>
+  <Step title="Add depot cards">
+    Click **Add Depot** on the app card to add one or more depot entries. Each depot card has:
+    - **Depot ID** — the numeric depot ID assigned in Steamworks.
+    - **Content root** — the absolute path to the folder whose contents will be mapped into this depot (e.g. `D:\builds\win64`).
+  </Step>
+  <Step title="Add additional depots">
+    Repeat the previous step for every depot that belongs to this app. A single app can have multiple depots.
+  </Step>
+</Steps>
+
+<Tip>
+You can add multiple app cards in a single session. Each app card tracks its own depots independently. Click **New App** again to add another application.
+</Tip>
+
+## Generating VDF files
+
+Once your app and depot cards are configured, click **Generate VDFs**. Onyx writes two files per app to the `scripts/` folder:
+
+**`scripts/app_<APPID>.vdf`** — tells SteamCMD which depots belong to the app:
+
+```vdf app_1234560.vdf
+"appbuild"
+{
+	"appid" "1234560"
+	"desc" "Generated with SteamBuildUploader by Silver Demon Studios"
+	"buildoutput" "D:\SteamSDK\tools\ContentBuilder\output"
+	"contentroot" ""
+	"setlive" ""
+	"preview" "0"
+	"local" ""
+	"depots"
+	{
+		"1234561" "depot_1234561.vdf"
+	}
+}
+```
+
+**`scripts/depot_<DEPOTID>.vdf`** — maps local files into the depot:
+
+```vdf depot_1234561.vdf
+"DepotBuildConfig"
+{
+	"DepotID" "1234561"
+	"contentroot" "D:\builds\win64"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"recursive" "1"
+	}
+	"FileExclusion" "*.pdb"
+}
+```
+
+<Note>
+The depot VDF maps everything under `contentroot` recursively and excludes `.pdb` files by default. To change file mappings or exclusions, edit the generated VDF directly in `scripts/`.
+</Note>
+
+After generating, the main screen rescans `scripts/` and displays an app card for each `app_*.vdf` file found.
+
+## Deleting app and depot configurations
+
+To remove an app or depot entry from the Setup dialog:
+
+- Click the **Delete** button on the app card to remove the app VDF and all its associated depot VDFs from `scripts/`.
+- Click the **Delete** button on a depot card to remove only that depot's VDF file.
+
+<Warning>
+Deletion removes the VDF files from disk immediately. This cannot be undone from within Onyx. Back up your `scripts/` folder if you need to preserve existing configurations.
+</Warning>

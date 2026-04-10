@@ -1,0 +1,74 @@
+---
+title: 'Add, Select, and Remove Steam Login Accounts in Onyx'
+description: 'Add Steam user accounts to Onyx, persist credentials to settings.cfg, select the active login used for SteamCMD uploads, and safely remove accounts.'
+---
+
+Onyx stores one or more Steam accounts so you can quickly switch between them when uploading builds. The account that is marked as active is passed directly to SteamCMD as the `+login` credentials during every upload. This guide explains how to add accounts, choose an active account, and remove accounts you no longer need.
+
+## Opening the Users panel
+
+Click the **Manage Users** button in the Onyx toolbar. The Users panel opens as a popup, listing all currently configured user cards.
+
+## Adding a user
+
+<Steps>
+  <Step title="Enter credentials">
+    Type your Steam username in the **Username** field and your password in the **Password** field at the top of the Users panel.
+  </Step>
+  <Step title="Choose whether to save credentials">
+    Toggle the **Save** button to control persistence:
+    - **Save enabled** — credentials are written to `settings.cfg` under the `[users]` section and will be available the next time you open Onyx.
+    - **Save disabled** — the user card exists only for the current session and is not written to disk.
+  </Step>
+  <Step title="Click Add User">
+    Click **Add User**. A new user card appears in the panel showing the username and a masked password.
+  </Step>
+</Steps>
+
+<Warning>
+When **Save** is enabled, your Steam password is stored in **plaintext** inside `settings.cfg` on your local machine. Anyone with access to that file can read it. Only use this option on a personal, trusted device. If you share your machine or store your project in a shared location, leave **Save** disabled and re-enter credentials each session.
+</Warning>
+
+## Understanding user cards
+
+Each user card in the panel displays:
+
+- **Username** — your Steam account name.
+- **Password** — shown masked (e.g. `••••••••`).
+- **Select / Deselect** — toggles whether this account is the active login.
+
+Only one user card can be active at a time. The active user's name appears in the main screen header so you always know which account Onyx will use for uploads.
+
+## Selecting the active user
+
+<Steps>
+  <Step title="Find the card to activate">
+    Locate the user card you want to use for uploads in the Users panel.
+  </Step>
+  <Step title="Click Select">
+    Click the **Select** button on that card. The button label changes to **Deselect** to confirm it is now active.
+  </Step>
+  <Step title="Verify in main screen">
+    Close the Users panel. The active username is shown in the main screen header. The **Upload** button will remain disabled until at least one app is also selected.
+  </Step>
+</Steps>
+
+<Note>
+Clicking **Select** on one card automatically deselects any previously active card. There is no way to have two users active simultaneously.
+</Note>
+
+To deactivate a user without selecting another, click **Deselect** on the currently active card. With no user selected, the Upload button is disabled.
+
+## Removing a user
+
+Click the **Remove** button on a user card to delete it. If the user was saved to `settings.cfg`, Onyx removes that entry from the config file at the same time. The card disappears from the panel immediately.
+
+<Warning>
+Removing a user card that is currently active will deactivate the login. You will need to select another user or add a new one before you can start an upload.
+</Warning>
+
+## Where credentials are stored
+
+Saved credentials are written to `settings.cfg` in the same directory as the Onyx executable, under the `[users]` section. Each user occupies a keyed entry in that section. The file is plain text and can be opened in any text editor.
+
+To revoke saved credentials outside of Onyx, open `settings.cfg` and remove the corresponding user entry manually, then restart Onyx.

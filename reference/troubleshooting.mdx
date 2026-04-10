@@ -1,0 +1,163 @@
+---
+title: 'Fix Common Onyx Configuration Errors and Upload Failures'
+description: 'Solutions for common Onyx errors including SteamCMD not found, missing apps, disabled upload button, and failed uploads on Windows and Linux.'
+---
+
+This page covers the most common issues encountered when setting up or using Onyx. Each section describes the symptom, explains the cause, and provides steps to resolve it.
+
+<AccordionGroup>
+  <Accordion title='"SteamCMD not found" error appears in the console' icon="circle-xmark">
+    **Symptom:** The upload console shows `❌ SteamCMD not found: <path>` when you start an upload.
+
+    **Cause:** Onyx cannot locate the SteamCMD executable at the path derived from your ContentBuilder directory setting.
+
+    Onyx looks for the executable at a platform-specific sub-path inside the ContentBuilder folder:
+
+    <Tabs>
+      <Tab title="Windows">
+        ```
+        <ContentBuilder>/builder/steamcmd.exe
+        ```
+      </Tab>
+      <Tab title="Linux">
+        ```
+        <ContentBuilder>/builder_linux/steamcmd.sh
+        ```
+      </Tab>
+    </Tabs>
+
+    **Steps to resolve:**
+
+    <Steps>
+      <Step title="Open settings and verify the ContentBuilder path">
+        In Onyx, open Settings and check the ContentBuilder directory path. Make sure it points to the root of your Steamworks ContentBuilder folder — the one that contains `builder/`, `content/`, `output/`, and `scripts/`.
+      </Step>
+      <Step title="Confirm the SteamCMD executable exists">
+        Browse to the path shown in the error message and confirm the file is present. If it is missing, re-download the Steamworks SDK or run `steamcmd.exe` once manually to let it self-install.
+      </Step>
+      <Step title="Check file permissions">
+        On Linux, confirm `steamcmd.sh` is executable: `chmod +x builder_linux/steamcmd.sh`.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title='"Invalid ContentBuilder folder" error when selecting a directory' icon="folder-xmark">
+    **Symptom:** After choosing a directory in Settings, Onyx shows `Invalid ContentBuilder folder!` and does not save the path.
+
+    **Cause:** The directory you selected is missing one or more of the required subdirectories. Onyx checks for `content/`, `output/`, and `scripts/` to confirm you have selected the correct folder.
+
+    **Steps to resolve:**
+
+    <Steps>
+      <Step title="Confirm you selected the right directory">
+        The ContentBuilder root folder should contain all three subdirectories. A common mistake is selecting the `builder/` subfolder or the SDK root instead of `ContentBuilder/`.
+      </Step>
+      <Step title="Create missing subdirectories if needed">
+        If any of `content/`, `output/`, or `scripts/` are missing, create them manually. SteamCMD expects them to exist before it runs.
+      </Step>
+    </Steps>
+
+    A correctly structured ContentBuilder directory looks like this:
+
+    <Tree>
+      <Tree.Folder name="ContentBuilder" defaultOpen>
+        <Tree.Folder name="builder" />
+        <Tree.Folder name="content" />
+        <Tree.Folder name="output" />
+        <Tree.Folder name="scripts" />
+      </Tree.Folder>
+    </Tree>
+  </Accordion>
+
+  <Accordion title="No apps appear on the main screen" icon="list">
+    **Symptom:** The Onyx main screen is empty — no app entries are listed even though you have VDF files.
+
+    **Cause:** Onyx scans the `scripts/` folder inside your ContentBuilder directory for files matching the pattern `app_<integer>.vdf`. Files that do not match this exact pattern are not loaded.
+
+    **Steps to resolve:**
+
+    <Steps>
+      <Step title="Check your ContentBuilder path is set">
+        If you have not yet configured the ContentBuilder path in Settings, no apps will load. Set the path and restart or reload.
+      </Step>
+      <Step title="Inspect the scripts/ directory">
+        Open `<ContentBuilder>/scripts/` in your file manager and confirm that your app VDF files are named `app_<APPID>.vdf` — for example, `app_1234560.vdf`. Any other naming (e.g., `myapp.vdf` or `1234560_app.vdf`) is ignored.
+      </Step>
+      <Step title="Verify the appid in the file">
+        Open the VDF file and confirm that the `"appid"` field contains only digits. A mismatch between the filename integer and the `appid` field does not prevent loading, but a non-integer filename will.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="The upload button stays disabled" icon="ban">
+    **Symptom:** The upload button is grayed out and cannot be clicked.
+
+    **Cause:** Onyx requires two conditions to be met simultaneously before enabling the upload button:
+
+    1. At least one app is checked in the app list.
+    2. At least one user account is selected in the user list.
+
+    **Steps to resolve:**
+
+    - In the app list, make sure at least one app has its checkbox enabled.
+    - In the user list, make sure exactly one account is selected (highlighted or checked).
+    - If no users appear, open Settings and add a Steam account with a username and password.
+
+    <Note>
+    Both username and password fields must be filled in before a user can be saved. Attempting to add a user with either field empty will show the error: `Both username and password must be filled before adding a user.`
+    </Note>
+  </Accordion>
+
+  <Accordion title="Upload fails immediately with no output" icon="bolt">
+    **Symptom:** You click upload, the console opens, and the process fails straight away without any SteamCMD log output. The error shown is `❌ Failed to start SteamCMD process`.
+
+    **Cause:** Onyx was unable to launch the SteamCMD process at all. This happens when `OS.create_process` returns `-1`, which typically indicates one of the following:
+
+    - The SteamCMD executable does not exist at the expected path (see the "SteamCMD not found" section above).
+    - The current user does not have permission to execute the file.
+    - The SteamCMD installation is corrupted.
+
+    **Steps to resolve:**
+
+    <Steps>
+      <Step title="Try launching SteamCMD manually">
+        Navigate to the SteamCMD executable and run it directly from a terminal or file manager. If it does not start, the problem is with the SteamCMD installation rather than Onyx.
+      </Step>
+      <Step title="Check file permissions">
+        On Linux, ensure the file has execute permission. On Windows, try running Onyx as administrator to rule out a permissions issue.
+      </Step>
+      <Step title="Re-download SteamCMD">
+        Delete the contents of the `builder/` or `builder_linux/` directory and re-download SteamCMD from the Steamworks SDK. Run it once manually to complete the initial self-update.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Upload pauses with a yellow Steam Guard warning" icon="shield-halved">
+    **Symptom:** The upload console shows a yellow `⚠️ WAITING FOR INPUT` message and the upload log stops updating.
+
+    **Cause:** SteamCMD has paused to ask for a Steam Guard two-factor authentication code. Because SteamCMD accepts the code through its own window rather than standard output, Onyx detects the pause by watching for 5 seconds of idle output while the process is still running.
+
+    For full details on how Steam Guard detection works and step-by-step instructions for responding, see the [Steam Guard reference page](/reference/steam-guard).
+  </Accordion>
+
+  <Accordion title="App description changes are not reflected after upload" icon="pen">
+    **Symptom:** You edited the build description in the Onyx UI, ran an upload, but the description shown in the Steamworks partner dashboard did not update.
+
+    **Cause:** Onyx writes the UI description value to the `"desc"` field in the app VDF file immediately before launching SteamCMD. If the VDF file is read-only, the write fails silently and SteamCMD uploads with the old description.
+
+    **Steps to resolve:**
+
+    <Steps>
+      <Step title="Check file permissions on the app VDF">
+        Locate `<ContentBuilder>/scripts/app_<APPID>.vdf` and confirm it is not marked read-only. On Windows, right-click the file, open Properties, and uncheck Read-only. On Linux, run `chmod u+w app_<APPID>.vdf`.
+      </Step>
+      <Step title="Confirm the desc field in the VDF">
+        Open the VDF file in a text editor after running an upload and verify the `"desc"` field contains the value you entered in Onyx. If it does not, there may be a file locking issue caused by another process holding the file open.
+      </Step>
+    </Steps>
+
+    <Note>
+    The description written to the `"desc"` field appears in the Steamworks partner dashboard build history. It does not affect what players see in the Steam store — that is controlled by your store page content.
+    </Note>
+  </Accordion>
+</AccordionGroup>

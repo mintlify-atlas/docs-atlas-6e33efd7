@@ -1,97 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Onyx: Batch Steam Build Uploader for Game Developers"
+description: "A desktop GUI tool for uploading multiple Steam apps and depots simultaneously via SteamCMD, built with Godot Engine and designed for indie developers."
 ---
 
-## Setting up
+Onyx is a free, open-source desktop application that streamlines your Steam build publishing workflow. Instead of running SteamCMD commands manually or using Valve's official GUI one app at a time, Onyx lets you queue multiple apps and depots, set build descriptions, and upload them all in a single session — with real-time console output and Steam Guard detection built in.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Go from download to your first successful Steam upload in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Installation" icon="download" href="/installation">
+    Download Onyx for Windows or Linux and get it running alongside your Steamworks SDK.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Set Up ContentBuilder" icon="folder-open" href="/guides/setup-content-builder">
+    Point Onyx to your Steamworks ContentBuilder directory and create your VDF configs.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Uploading Builds" icon="cloud-arrow-up" href="/guides/uploading-builds">
+    Select apps, set descriptions, and upload multiple builds with one click.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What Onyx does
 
-Everything you need to create world-class documentation.
+Onyx wraps SteamCMD in a clean, purpose-built GUI that mirrors the structure of Valve's official Steamworks tools. It reads your existing VDF build scripts, lets you manage them visually, and drives SteamCMD in the background to perform the actual upload.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={3}>
+  <Card title="Batch uploads" icon="layer-group">
+    Upload multiple apps and their depots in a single session without re-entering credentials each time.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="VDF management" icon="file-code">
+    Generate and edit `app_*.vdf` and `depot_*.vdf` build configuration files from within the app.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="User accounts" icon="users">
+    Store multiple Steam accounts and switch the active uploader account without retyping credentials.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Live console" icon="terminal">
+    Watch SteamCMD output in real time, with automatic detection when Steam Guard input is needed.
   </Card>
-</Columns>
+  <Card title="Cross-platform" icon="display">
+    Runs on Windows and Linux, invoking the correct SteamCMD binary for each platform automatically.
+  </Card>
+  <Card title="Cancel anytime" icon="circle-stop">
+    Stop an in-progress upload at any time without losing your selected app queue.
+  </Card>
+</CardGroup>
 
-## Need inspiration?
+## How it works
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Steps>
+  <Step title="Point to your ContentBuilder folder">
+    Open the Setup dialog and browse to your Steamworks SDK `ContentBuilder` directory. Onyx validates that the `content`, `output`, and `scripts` subdirectories are present.
+  </Step>
+  <Step title="Create or load your app configs">
+    Onyx reads `app_*.vdf` files from the `scripts/` folder. You can also create new app and depot VDF files from scratch inside the app.
+  </Step>
+  <Step title="Select a Steam account">
+    Add your Steam username and password in the Users panel, then select which account to use for this upload session.
+  </Step>
+  <Step title="Upload">
+    Check the apps you want to upload, optionally set a build description, and click **Upload**. Onyx runs SteamCMD for each app in sequence and streams the output to the console panel.
+  </Step>
+</Steps>
+
+<Note>
+  Onyx is a local desktop tool — it never sends your credentials to any external server. All authentication happens directly between SteamCMD and Valve's servers on your machine.
+</Note>
